@@ -1,0 +1,20 @@
+# Secrets - NEVER commit
+.streamlit/secrets.toml
+
+# Python
+__pycache__/
+*.py[cod]
+*.egg-info/
+dist/
+build/
+
+# IDE
+.vscode/
+.idea/
+
+# Snowflake internal
+.snowflake/
+
+# OS
+.DS_Store
+Thumbs.db
