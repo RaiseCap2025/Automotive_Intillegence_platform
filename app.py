@@ -1,65 +1,58 @@
 import streamlit as st
+from utils.styling import PAGE_CONFIG, CUSTOM_CSS, render_sidebar_nav
 
-st.set_page_config(
-    page_title="Automotive Intelligence Platform",
-    page_icon="🔋",
-    layout="wide",
-    initial_sidebar_state="expanded",
-)
+st.set_page_config(**PAGE_CONFIG)
+st.markdown(CUSTOM_CSS, unsafe_allow_html=True)
+render_sidebar_nav()
 
 st.markdown("""
-<style>
-    .block-container {padding-top: 1rem; padding-bottom: 1rem;}
-    [data-testid="stMetric"] {
-        background-color: #1A1D23;
-        border: 1px solid #2D3139;
-        border-radius: 8px;
-        padding: 12px 16px;
-    }
-    [data-testid="stMetric"] label {font-size: 0.85rem; color: #9CA3AF;}
-    [data-testid="stMetric"] [data-testid="stMetricValue"] {font-size: 1.8rem;}
-    .stTabs [data-baseweb="tab-list"] {gap: 8px;}
-    .stTabs [data-baseweb="tab"] {
-        background-color: #1A1D23;
-        border-radius: 6px;
-        padding: 8px 16px;
-    }
-</style>
+<div style="text-align:center; padding: 20px 0 10px 0;">
+    <h1 style="color:#29B5E8; font-size:2.5rem; margin-bottom:0;">
+        ⚡ Vehicle Quality Command Center
+    </h1>
+    <p style="color:#8B949E; font-size:1.1rem; margin-top:4px;">
+        AI-Powered Automotive Battery Intelligence Platform &nbsp;|&nbsp; Snowflake + Cortex AI
+    </p>
+</div>
 """, unsafe_allow_html=True)
 
-st.title("⚡ Automotive Intelligence Platform")
-st.markdown(
-    "**Vehicle Battery Quality Analytics** — Powered by Snowflake + Cortex AI"
+st.markdown("---")
+
+# Navigation cards
+all_pages = [
+    ("📊", "Executive Command Center", "Fleet KPIs, health scores, risk rankings", "pages/01_📊_Executive_Command_Center.py"),
+    ("🔋", "Vehicle Health Monitor", "Live vehicle status with health indicators", "pages/02_🔋_Vehicle_Health_Monitor.py"),
+    ("🔬", "Root Cause Investigator", "AI-powered failure analysis with defect tracing", "pages/03_🔬_Root_Cause_Investigator.py"),
+    ("📈", "Failure Prediction", "ML forecasts with risk scoring", "pages/04_📈_Failure_Prediction.py"),
+    ("🤖", "AutoDoctor Copilot", "Natural language Q&A over quality data", "pages/05_🤖_AutoDoctor_Copilot.py"),
+    ("💰", "Recall Simulator", "What-if analysis for recall decisions", "pages/06_💰_Recall_Simulator.py"),
+    ("🏭", "Supplier Intelligence", "Supplier quality scorecards", "pages/07_🏭_Supplier_Intelligence.py"),
+    ("🌎", "Geo Intelligence", "Geographic failure heatmaps", "pages/08_🌎_Geo_Intelligence.py"),
+    ("⚙️", "Action Center", "Automated response rules", "pages/09_⚙️_Action_Center.py"),
+    ("🎯", "Demo Mode", "One-click demo for judges", "pages/10_🎯_Demo_Mode.py"),
+]
+
+CARD = (
+    "background:linear-gradient(135deg,#161B22 0%,#1A2332 100%);"
+    "border:1.5px solid #29B5E8;border-radius:12px;"
+    "padding:22px 18px 16px 18px;min-height:180px;"
+    "box-shadow:0 0 14px rgba(41,181,232,0.10);"
 )
-st.markdown("---")
 
-col1, col2, col3 = st.columns(3)
-with col1:
-    st.markdown("### 📊 Dashboard")
-    st.markdown("Real-time KPIs and failure trends across the entire fleet.")
-    st.page_link("pages/1_Executive_Dashboard.py", label="Open Dashboard →")
-
-with col2:
-    st.markdown("### 🏭 Supplier Analytics")
-    st.markdown("Compare supplier quality performance and identify root causes.")
-    st.page_link("pages/2_Supplier_Analytics.py", label="Open Supplier Analytics →")
-
-with col3:
-    st.markdown("### 📈 Failure Forecasting")
-    st.markdown("ML-powered 30-day failure predictions per battery part.")
-    st.page_link("pages/3_Failure_Forecasting.py", label="Open Forecasting →")
-
-st.markdown("")
-col4, col5 = st.columns(2)
-with col4:
-    st.markdown("### 🤖 AI Assistant")
-    st.markdown("Ask questions about quality data in natural language using Cortex AI.")
-    st.page_link("pages/4_AI_Assistant.py", label="Open AI Assistant →")
-
-with col5:
-    st.markdown("### 🔍 Vehicle Lookup")
-    st.markdown("Search by VIN and inspect individual vehicle event history.")
-    st.page_link("pages/5_Vehicle_Lookup.py", label="Open Vehicle Lookup →")
+for row_start in range(0, len(all_pages), 5):
+    cols = st.columns(5)
+    for i, (icon, title, desc, path) in enumerate(all_pages[row_start:row_start + 5]):
+        with cols[i]:
+            st.markdown(
+                f'<div style="{CARD}">'
+                f'<div style="font-size:2.2rem;margin-bottom:6px;">{icon}</div>'
+                f'<div style="font-size:1.05rem;font-weight:700;color:#FAFAFA;margin-bottom:6px;">{title}</div>'
+                f'<div style="font-size:0.82rem;color:#8B949E;margin-bottom:12px;">{desc}</div>'
+                f'</div>',
+                unsafe_allow_html=True,
+            )
+            st.page_link(path, label=f"Open {title}", use_container_width=True)
+    st.markdown("")
 
 st.markdown("---")
-st.caption("Snowflake x Capgemini Hackathon 2026 | Built with Streamlit, Snowpark & Cortex AI")
+st.caption("Snowflake x Capgemini Hackathon 2026 | Built with Streamlit, Snowpark, Cortex AI & Snowflake ML")
