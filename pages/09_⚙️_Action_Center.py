@@ -92,4 +92,4 @@ st.markdown('<p class="section-header">Recent Early Warning Alerts</p>', unsafe_
 severity_filter = st.multiselect("Filter Severity", ["CRITICAL", "HIGH", "MEDIUM"],
                                   default=["CRITICAL", "HIGH"])
 filtered_alerts = alerts[alerts["SEVERITY"].isin(severity_filter)]
-st.dataframe(filtered_alerts.head(50), use_container_width=True, hide_index=True)
+st.dataframe(filtered_alerts.head(50), width="stretch", hide_index=True)

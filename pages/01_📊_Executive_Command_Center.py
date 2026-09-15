@@ -63,7 +63,7 @@ with left:
         showarrow=False,
     )
     fig_gauge.update_layout(**PLOTLY_LAYOUT, height=300, showlegend=False)
-    st.plotly_chart(fig_gauge, use_container_width=True)
+    st.plotly_chart(fig_gauge, width="stretch")
 
     for status, count in health_map.items():
         pct = round(count / max(total, 1) * 100)
@@ -81,7 +81,7 @@ with right:
         fill="tozeroy", fillcolor="rgba(248,113,113,0.1)",
     ))
     fig_trend.update_layout(**PLOTLY_LAYOUT, height=300, xaxis_title="Week", yaxis_title="Failure Rate (%)")
-    st.plotly_chart(fig_trend, use_container_width=True)
+    st.plotly_chart(fig_trend, width="stretch")
 
 st.markdown("---")
 
@@ -99,7 +99,7 @@ with left2:
     fig_sup.update_traces(texttemplate="%{text}%", textposition="outside")
     fig_sup.update_layout(**PLOTLY_LAYOUT, height=300, coloraxis_showscale=False,
                           xaxis_title="Failure Rate (%)", yaxis_title="")
-    st.plotly_chart(fig_sup, use_container_width=True)
+    st.plotly_chart(fig_sup, width="stretch")
 
 with right2:
     st.markdown('<p class="section-header">Top Error Codes</p>', unsafe_allow_html=True)
@@ -112,4 +112,4 @@ with right2:
         )
         fig_err.update_layout(**PLOTLY_LAYOUT, height=300, coloraxis_showscale=False,
                               xaxis_title="Failure Events", yaxis_title="DTC Code")
-        st.plotly_chart(fig_err, use_container_width=True)
+        st.plotly_chart(fig_err, width="stretch")

@@ -47,7 +47,7 @@ fig_map.update_layout(
     geo=dict(bgcolor="rgba(0,0,0,0)", lakecolor="rgba(0,0,0,0)"),
     coloraxis_colorbar=dict(title="Avg Risk"),
 )
-st.plotly_chart(fig_map, use_container_width=True)
+st.plotly_chart(fig_map, width="stretch")
 
 st.markdown("---")
 
@@ -78,7 +78,7 @@ with right:
         )
         fig_bar.update_layout(**PLOTLY_LAYOUT, height=400, coloraxis_showscale=False,
                               xaxis_title="Failure Count", yaxis_title="")
-        st.plotly_chart(fig_bar, use_container_width=True)
+        st.plotly_chart(fig_bar, width="stretch")
 
 # ── Full State Table ──
 st.markdown("---")
@@ -86,4 +86,4 @@ with st.expander("View All States Data"):
     display_cols = ["STATE_AB", "STATE", "TOTAL_VEHICLES", "AVG_RISK_SCORE",
                     "CRITICAL_COUNT", "HIGH_COUNT", "MEDIUM_COUNT", "LOW_COUNT",
                     "HIGH_RISK_PCT", "TOTAL_ERRORS", "REGIONAL_STATUS"]
-    st.dataframe(geo[display_cols], use_container_width=True, hide_index=True)
+    st.dataframe(geo[display_cols], width="stretch", hide_index=True)

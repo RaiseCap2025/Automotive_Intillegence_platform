@@ -66,7 +66,7 @@ with left:
     fig_rel.update_traces(texttemplate="%{text:.0f}", textposition="outside")
     fig_rel.update_layout(**PLOTLY_LAYOUT, height=320, coloraxis_showscale=False,
                           xaxis_title="", yaxis_title="Reliability Score")
-    st.plotly_chart(fig_rel, use_container_width=True)
+    st.plotly_chart(fig_rel, width="stretch")
 
 with right:
     st.markdown('<p class="section-header">Failure Rate by Supplier</p>', unsafe_allow_html=True)
@@ -78,7 +78,7 @@ with right:
     fig_fr.update_traces(texttemplate="%{text}%", textposition="outside")
     fig_fr.update_layout(**PLOTLY_LAYOUT, height=320, coloraxis_showscale=False,
                          xaxis_title="", yaxis_title="Failure Rate (%)")
-    st.plotly_chart(fig_fr, use_container_width=True)
+    st.plotly_chart(fig_fr, width="stretch")
 
 st.markdown("---")
 
@@ -89,7 +89,7 @@ if not trend.empty:
     fig_trend = px.line(trend, x="WEEK_START", y="FAILURE_RATE_PCT", color="SUPPLIER_NAME", markers=True)
     fig_trend.update_layout(**PLOTLY_LAYOUT, height=320, xaxis_title="Week",
                             yaxis_title="Failure Rate (%)", legend_title="Supplier")
-    st.plotly_chart(fig_trend, use_container_width=True)
+    st.plotly_chart(fig_trend, width="stretch")
 
 # ── Battery Type Performance ──
 st.markdown("---")
@@ -101,4 +101,4 @@ if not batt.empty:
     fig_batt.update_traces(texttemplate="%{text}%", textposition="outside")
     fig_batt.update_layout(**PLOTLY_LAYOUT, height=350, xaxis_title="Battery Type",
                            yaxis_title="Failure Rate (%)", legend_title="Supplier")
-    st.plotly_chart(fig_batt, use_container_width=True)
+    st.plotly_chart(fig_batt, width="stretch")

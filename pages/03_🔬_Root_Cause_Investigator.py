@@ -113,7 +113,7 @@ risk_exp = run_query(session, Q.RISK_EXPLANATIONS)
 if not risk_exp.empty:
     display = risk_exp[["VIN", "RISK_SCORE", "RISK_TIER", "ERROR_COUNT", "SUPPLIER_NAME",
                          "PRIMARY_RISK_FACTOR", "RECOMMENDED_ACTION"]].head(20)
-    st.dataframe(display, use_container_width=True, hide_index=True)
+    st.dataframe(display, width="stretch", hide_index=True)
 
 # ── Defect Path Sankey ──
 st.markdown("---")
@@ -167,4 +167,4 @@ if not sankey_data.empty:
                   color="rgba(41, 181, 232, 0.2)"),
     ))
     fig_sankey.update_layout(**PLOTLY_LAYOUT, height=450, title="Supplier → Battery → Error Code → State")
-    st.plotly_chart(fig_sankey, use_container_width=True)
+    st.plotly_chart(fig_sankey, width="stretch")

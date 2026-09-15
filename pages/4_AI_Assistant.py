@@ -81,11 +81,41 @@ def ask_agent(question: str, session) -> str:
 
     try:
         resp = json.loads(raw)
-        text_parts = []
-        for item in resp.get("content", []):
-            if item.get("type") == "text":
-                text_parts.append(item["text"])
-        return "\n".join(text_parts) if text_parts else raw
+        parts = []
+
+        def extract_content(items):
+            for item in items:
+                t = item.get("type", "")
+                if t == "text":
+                    parts.append(item.get("text", ""))
+                elif t == "tool_results":
+                    tr = item.get("tool_results", {})
+                    tool_name = tr.get("name", "")
+                    if tool_name:
+                        parts.append(f"\n---\n**Tool: {tool_name}**")
+                    inner = tr.get("content", [])
+                    if isinstance(inner, list):
+                        extract_content(inner)
+                    elif isinstance(inner, str):
+                        parts.append(inner)
+                elif t == "tool_use":
+                    tool_name = item.get("name", "tool")
+                    tool_input = item.get("input", {})
+                    if isinstance(tool_input, dict) and "query" in tool_input:
+                        parts.append(f"\n**Query ({tool_name}):**")
+                        parts.append(f"```sql\n{tool_input['query']}\n```")
+                elif t == "json":
+                    j = item.get("json", {})
+                    if isinstance(j, dict) and "sql" in j:
+                        parts.append(f"```sql\n{j['sql']}\n```")
+                    else:
+                        parts.append(f"```json\n{json.dumps(j, indent=2)}\n```")
+                elif t == "data":
+                    d = item.get("data", item)
+                    parts.append(f"```json\n{json.dumps(d, indent=2)}\n```")
+
+        extract_content(resp.get("content", []))
+        return "\n\n".join(parts) if parts else raw
     except (json.JSONDecodeError, KeyError):
         return raw
 
@@ -297,6 +327,7 @@ if prompt := st.chat_input("Ask about vehicle battery quality..."):
             response = f"Error: {result_holder['error']}"
         else:
             response = result_holder.get("response", "No response from agent.")
+
         st.markdown(response)
 
     st.session_state.messages.append({"role": "assistant", "content": response})

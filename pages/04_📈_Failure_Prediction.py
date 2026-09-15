@@ -30,7 +30,7 @@ if not risk_df.empty:
 
     display = risk_df[["VIN", "RISK_TIER", "RISK_SCORE", "SUPPLIER_NAME",
                         "BATTERY_TYPE_NAME", "STATE", "ERROR_COUNT"]].head(30)
-    st.dataframe(display, use_container_width=True, hide_index=True, height=300)
+    st.dataframe(display, width="stretch", hide_index=True, height=300)
 
 st.markdown("---")
 
@@ -45,7 +45,7 @@ if not heatmap_df.empty:
         labels=dict(x="Battery Type", y="Supplier", color="Failure Rate %"),
     )
     fig_heat.update_layout(**PLOTLY_LAYOUT, height=300)
-    st.plotly_chart(fig_heat, use_container_width=True)
+    st.plotly_chart(fig_heat, width="stretch")
 
 st.markdown("---")
 
@@ -86,7 +86,7 @@ if not forecast_df.empty:
 
     fig.update_layout(**PLOTLY_LAYOUT, height=350, xaxis_title="Date", yaxis_title="Failure Count",
                       legend=dict(orientation="h", y=1.05))
-    st.plotly_chart(fig, use_container_width=True)
+    st.plotly_chart(fig, width="stretch")
 
     # Summary
     fc1, fc2, fc3 = st.columns(3)

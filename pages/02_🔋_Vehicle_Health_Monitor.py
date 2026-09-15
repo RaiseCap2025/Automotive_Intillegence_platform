@@ -60,7 +60,7 @@ display_df = display_df.rename(columns={
     "VEHICLE_CONFIG": "Config", "MODEL_YEAR": "Year"
 })
 
-st.dataframe(display_df, use_container_width=True, hide_index=True, height=400)
+st.dataframe(display_df, width="stretch", hide_index=True, height=400)
 
 # ── Vehicle Detail Panel ──
 st.markdown("---")
@@ -93,9 +93,9 @@ if selected_vin:
                 title="Failure Events Timeline",
             )
             fig.update_layout(**PLOTLY_LAYOUT, height=250, xaxis_title="Date", yaxis_title="Temp (°F)")
-            st.plotly_chart(fig, use_container_width=True)
+            st.plotly_chart(fig, width="stretch")
         with st.expander(f"All Events ({len(events)})"):
-            st.dataframe(events, use_container_width=True, hide_index=True)
+            st.dataframe(events, width="stretch", hide_index=True)
 
     # Battery specs
     part_number = vehicle["PART_NUMBER"].replace("'", "''")

@@ -24,13 +24,13 @@ sc1, sc2, sc3 = st.columns(3)
 
 scenario = None
 with sc1:
-    if st.button("🔋 Simulate Battery Failure", use_container_width=True, type="primary"):
+    if st.button("🔋 Simulate Battery Failure", width="stretch", type="primary"):
         scenario = "battery"
 with sc2:
-    if st.button("🏭 Simulate Supplier Defect", use_container_width=True, type="primary"):
+    if st.button("🏭 Simulate Supplier Defect", width="stretch", type="primary"):
         scenario = "supplier"
 with sc3:
-    if st.button("📋 Simulate Recall Decision", use_container_width=True, type="primary"):
+    if st.button("📋 Simulate Recall Decision", width="stretch", type="primary"):
         scenario = "recall"
 
 if scenario:
@@ -47,7 +47,7 @@ if scenario:
                 WHERE SEVERITY = 'CRITICAL' LIMIT 5
             """)
             st.markdown(f"**Detected {len(alerts)} critical battery anomalies**")
-            st.dataframe(alerts, use_container_width=True, hide_index=True)
+            st.dataframe(alerts, width="stretch", hide_index=True)
 
         elif scenario == "supplier":
             sc_data = run_query(session, f"""
@@ -55,7 +55,7 @@ if scenario:
                 FROM {Q.T}.SUPPLIER_SCORECARD WHERE SUPPLIER_STATUS = 'WATCH_LIST'
             """)
             st.markdown(f"**{len(sc_data)} suppliers flagged on Watch List**")
-            st.dataframe(sc_data, use_container_width=True, hide_index=True)
+            st.dataframe(sc_data, width="stretch", hide_index=True)
 
         elif scenario == "recall":
             geo = run_query(session, f"""
@@ -64,7 +64,7 @@ if scenario:
                 ORDER BY AVG_RISK_SCORE DESC LIMIT 5
             """)
             st.markdown(f"**{len(geo)} states identified as recall candidates**")
-            st.dataframe(geo, use_container_width=True, hide_index=True)
+            st.dataframe(geo, width="stretch", hide_index=True)
 
         s1.update(label="Step 1: Anomaly Detection - Complete", state="complete")
 

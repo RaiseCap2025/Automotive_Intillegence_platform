@@ -83,7 +83,7 @@ fig_waterfall = go.Figure(go.Waterfall(
     totals=dict(marker=dict(color=COLORS["primary"] if net_impact >= 0 else COLORS["critical"])),
 ))
 fig_waterfall.update_layout(**PLOTLY_LAYOUT, height=350, yaxis_title="USD")
-st.plotly_chart(fig_waterfall, use_container_width=True)
+st.plotly_chart(fig_waterfall, width="stretch")
 
 # ── Side-by-Side Comparison ──
 st.markdown("---")
@@ -119,5 +119,5 @@ with st.expander(f"View Affected Vehicles ({recalled_count:,})"):
     if not recalled.empty:
         st.dataframe(
             recalled[["VIN", "RISK_SCORE", "RISK_TIER", "SUPPLIER_NAME", "BATTERY_TYPE_NAME", "STATE", "ERROR_COUNT"]].head(100),
-            use_container_width=True, hide_index=True
+            width="stretch", hide_index=True
         )
