@@ -5,7 +5,7 @@ import time
 import sys, os
 sys.path.insert(0, os.path.join(os.path.dirname(__file__), ".."))
 
-from utils.styling import PAGE_CONFIG, CUSTOM_CSS, COLORS, render_sidebar_nav
+from utils.styling import PAGE_CONFIG, CUSTOM_CSS, COLORS, render_sidebar_nav, page_header
 from utils.connection import get_session
 
 st.set_page_config(**{**PAGE_CONFIG, "page_title": "AutoDoctor Copilot", "page_icon": "🤖"})
@@ -142,6 +142,21 @@ st.markdown("""
 """, unsafe_allow_html=True)
 
 session = get_session()
+
+# ── Sidebar LLM info ──
+with st.sidebar:
+    st.markdown(
+        '<div style="margin-top:1.5rem;padding:0.8rem;background:rgba(41,181,232,0.04);'
+        'border:1px solid rgba(41,181,232,0.12);border-radius:0.6rem;">'
+        '<div style="font-size:0.62rem;text-transform:uppercase;letter-spacing:1.5px;'
+        'color:#484F58;font-weight:700;margin-bottom:0.4rem;">LLM Engine</div>'
+        '<div style="font-size:0.82rem;color:#C9D1D9;font-weight:600;">Cortex Agent</div>'
+        '<div style="font-size:0.72rem;color:#6E7681;">VEHICLE_QUALITY_ORCHESTRATOR</div>'
+        '<div style="font-size:0.62rem;color:#484F58;margin-top:0.3rem;">'
+        'Snowflake Cortex · Data Agent Run</div>'
+        '</div>',
+        unsafe_allow_html=True,
+    )
 
 
 def ask_agent(question: str, session) -> str:
@@ -347,6 +362,20 @@ if "messages" not in st.session_state:
 if "pending_prompt" not in st.session_state:
     st.session_state.pending_prompt = None
 
+# Action bar (Attach / Chat History)
+ab1, ab2, ab_spacer = st.columns([1, 1, 4])
+with ab1:
+    st.button("📎 Attach Document", disabled=True, help="Document upload coming soon")
+with ab2:
+    if st.button("📜 View Chat History"):
+        if st.session_state.messages:
+            with st.expander("Chat History", expanded=True):
+                for m in st.session_state.messages:
+                    role_lbl = "You" if m["role"] == "user" else "AutoDoctor"
+                    st.markdown(f"**{role_lbl}:** {m['content'][:200]}{'...' if len(m['content']) > 200 else ''}")
+        else:
+            st.info("No chat history yet.")
+
 for msg in st.session_state.messages:
     with st.chat_message(msg["role"]):
         st.markdown(msg["content"])
@@ -384,9 +413,7 @@ if prompt:
 
     with st.chat_message("assistant"):
         loader = st.empty()
-        stop_col = st.empty()
         result_holder = {}
-        stopped = False
 
         agent_thread = threading.Thread(
             target=run_agent_threaded,
@@ -406,30 +433,20 @@ if prompt:
                 CAR_LOADER_HTML.format(pct=pct, status=status, duration=duration),
                 unsafe_allow_html=True,
             )
-            if stop_col.button("⏹ Stop generating", key=f"stop_{start_time}"):
-                stopped = True
-                break
             time.sleep(0.5)
 
-        if stopped:
-            loader.empty()
-            stop_col.empty()
-            response = "*Generation stopped by user.*"
-            st.markdown(response)
-        else:
-            stop_col.empty()
-            agent_thread.join()
-            loader.markdown(
-                CAR_LOADER_HTML.format(pct=100, status="Done!", duration=0.3),
-                unsafe_allow_html=True,
-            )
-            time.sleep(0.6)
-            loader.empty()
+        agent_thread.join()
+        loader.markdown(
+            CAR_LOADER_HTML.format(pct=100, status="Done!", duration=0.3),
+            unsafe_allow_html=True,
+        )
+        time.sleep(0.6)
+        loader.empty()
 
-            if "error" in result_holder:
-                response = f"**Error:** {result_holder['error']}"
-            else:
-                response = result_holder.get("response", "No response from agent.")
+        if "error" in result_holder:
+            response = f"**Error:** {result_holder['error']}"
+        else:
+            response = result_holder.get("response", "No response from agent.")
 
             st.markdown(response)
 

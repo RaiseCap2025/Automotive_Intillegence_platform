@@ -1,8 +1,8 @@
-"""Centralized SQL queries for the Vehicle Quality Command Center."""
+"""Centralized SQL queries for the Automotive Intelligence Platform."""
 
 T = "VEHICLE_QUALITY_DB.PUBLIC"
 
-# ── Executive Command Center ──────────────────────────────────────────
+# ── Executive Summary Dashboard ───────────────────────────────────────
 
 KPI_OVERVIEW = f"""
 SELECT
@@ -56,7 +56,35 @@ WHERE e.HAS_ERROR = 1
 GROUP BY e.DTC_CODE, d.DESCRIPTION ORDER BY event_count DESC
 """
 
-# ── Vehicle Health Monitor ────────────────────────────────────────────
+EXECUTIVE_INSIGHTS = f"""
+SELECT
+    s.SUPPLIER_NAME AS worst_supplier,
+    s.OVERALL_FAILURE_RATE AS worst_supplier_rate,
+    s.TOTAL_FAILURES AS worst_supplier_failures,
+    (SELECT SUM(FORECAST) FROM {T}.FORECAST_FAILURES_30D) AS predicted_failures_30d,
+    (SELECT d.DESCRIPTION FROM {T}.FACT_QUALITY_EVENTS e
+     JOIN {T}.DTC_BATTERY_ERROR_CODES d ON e.DTC_ERROR_CODE = d.ERROR_ID
+     WHERE e.HAS_ERROR = 1
+     GROUP BY d.DESCRIPTION ORDER BY COUNT(*) DESC LIMIT 1) AS top_root_cause
+FROM {T}.SUPPLIER_SCORECARD s
+ORDER BY s.OVERALL_FAILURE_RATE DESC LIMIT 1
+"""
+
+WARRANTY_COST_ESTIMATE = f"""
+SELECT
+    COUNT(*) AS at_risk_vehicles,
+    ROUND(COUNT(*) * 1500, 0) AS warranty_cost_exposure,
+    ROUND(COUNT(*) * 1500 * 0.6, 0) AS potential_savings
+FROM {T}.VEHICLE_RISK_SCORE
+WHERE RISK_TIER IN ('CRITICAL', 'HIGH')
+"""
+
+QUALITY_SCORE_OVERALL = f"""
+SELECT ROUND(100 - (SUM(HAS_ERROR)::FLOAT / NULLIF(COUNT(*), 0) * 100), 1) AS quality_score
+FROM {T}.FACT_QUALITY_EVENTS
+"""
+
+# ── Vehicle Quality Health Dashboard ──────────────────────────────────
 
 VEHICLE_RISK_LIST = f"""
 SELECT VIN, CAR_ID, MODEL_YEAR, VEHICLE_CONFIG, STATE, STATE_AB,
@@ -84,7 +112,38 @@ FROM VEHICLE_QUALITY_DB.PUBLIC.DIM_COMPONENTS
 WHERE PART_NUMBER = '{part_number}'
 """
 
-# ── Root Cause Analysis ───────────────────────────────────────────────
+FAILURES_BY_MODEL = f"""
+SELECT VEHICLE_CONFIG,
+       COUNT(*) AS FAILURE_COUNT,
+       COUNT(DISTINCT VIN) AS VEHICLES_AFFECTED,
+       ROUND(AVG(RISK_SCORE), 1) AS AVG_RISK
+FROM {T}.VEHICLE_RISK_SCORE
+GROUP BY VEHICLE_CONFIG ORDER BY FAILURE_COUNT DESC
+"""
+
+QUALITY_BY_MODEL_YEAR = f"""
+SELECT MODEL_YEAR,
+       COUNT(DISTINCT VIN) AS total_vehicles,
+       AVG(RISK_SCORE) AS avg_risk_score,
+       ROUND(100 - AVG(RISK_SCORE), 1) AS quality_score,
+       SUM(CASE WHEN RISK_TIER = 'CRITICAL' THEN 1 ELSE 0 END) AS critical_count
+FROM {T}.VEHICLE_RISK_SCORE
+GROUP BY MODEL_YEAR ORDER BY MODEL_YEAR
+"""
+
+GEO_STATE_HEALTH = f"""
+SELECT * FROM {T}.FLEET_HEALTH_GEO ORDER BY HIGH_RISK_PCT DESC
+"""
+
+FAILURES_BY_STATE = f"""
+SELECT STATE, STATE_AB, COUNT(*) AS failure_count,
+       ROUND(AVG(AVG_TEMP_F), 1) AS avg_temp,
+       COUNT(DISTINCT CAR_ID) AS vehicles_affected
+FROM {T}.FACT_QUALITY_EVENTS WHERE HAS_ERROR = 1
+GROUP BY STATE, STATE_AB ORDER BY failure_count DESC
+"""
+
+# ── Root Cause Analysis Dashboard ─────────────────────────────────────
 
 RCA_FAILURE_SUMMARY = f"""
 SELECT SUPPLIER_NAME, BATTERY_TYPE_NAME, DTC_CODE, ERROR_DESCRIPTION,
@@ -119,11 +178,151 @@ ORDER BY RISK_SCORE DESC
 LIMIT 200
 """
 
-# ── Failure Prediction ────────────────────────────────────────────────
+DEFECT_COMPONENT_MAP = f"""
+SELECT c.PART_NUMBER, c.SUPPLIER_NAME, c.BATTERY_TYPE_NAME,
+       c.VOLTAGE_RANGE, c.AH, c.ANODE,
+       COUNT(DISTINCT e.CAR_ID) AS affected_vehicles,
+       SUM(e.HAS_ERROR) AS total_defects,
+       ROUND(SUM(e.HAS_ERROR)::FLOAT / NULLIF(COUNT(*), 0) * 100, 2) AS defect_rate_pct
+FROM {T}.DIM_COMPONENTS c
+JOIN {T}.FACT_QUALITY_EVENTS e ON c.PART_NUMBER = e.PART_NUMBER
+GROUP BY c.PART_NUMBER, c.SUPPLIER_NAME, c.BATTERY_TYPE_NAME,
+         c.VOLTAGE_RANGE, c.AH, c.ANODE
+ORDER BY total_defects DESC
+"""
+
+SUPPLIER_CONTRIBUTION = f"""
+SELECT SUPPLIER_NAME,
+       SUM(HAS_ERROR) AS total_failures,
+       ROUND(SUM(HAS_ERROR)::FLOAT / NULLIF((SELECT SUM(HAS_ERROR) FROM {T}.FACT_QUALITY_EVENTS WHERE HAS_ERROR=1), 0) * 100, 1) AS pct_of_all_failures
+FROM {T}.FACT_QUALITY_EVENTS
+WHERE HAS_ERROR = 1
+GROUP BY SUPPLIER_NAME ORDER BY total_failures DESC
+"""
+
+RCA_CORRELATION_HEATMAP = f"""
+SELECT SUPPLIER_NAME, BATTERY_TYPE_NAME,
+       ROUND(SUM(HAS_ERROR)::FLOAT / NULLIF(COUNT(*), 0) * 100, 2) AS failure_rate_pct,
+       COUNT(*) AS total_events
+FROM {T}.FACT_QUALITY_EVENTS
+GROUP BY SUPPLIER_NAME, BATTERY_TYPE_NAME
+"""
+
+# ── Manufacturing Quality Dashboard ───────────────────────────────────
+
+MANUFACTURING_KPI = f"""
+SELECT
+    ROUND((1 - SUM(HAS_ERROR)::FLOAT / NULLIF(COUNT(*), 0)) * 100, 1) AS first_pass_yield,
+    ROUND(SUM(HAS_ERROR)::FLOAT / NULLIF(COUNT(*), 0) * 100, 2) AS defect_rate_pct,
+    COUNT(DISTINCT CASE WHEN v.RISK_TIER = 'CRITICAL' THEN e.CAR_ID END) AS scrap_candidates,
+    SUM(e.HAS_ERROR) AS inspection_failures,
+    COUNT(DISTINCT e.CAR_ID) AS total_vehicles_inspected
+FROM {T}.FACT_QUALITY_EVENTS e
+LEFT JOIN {T}.VEHICLE_RISK_SCORE v ON e.CAR_ID = v.CAR_ID
+"""
+
+REWORK_RATE = f"""
+SELECT
+    COUNT(DISTINCT CASE WHEN error_count > 1 THEN CAR_ID END) AS rework_vehicles,
+    COUNT(DISTINCT CAR_ID) AS total_vehicles,
+    ROUND(COUNT(DISTINCT CASE WHEN error_count > 1 THEN CAR_ID END)::FLOAT /
+          NULLIF(COUNT(DISTINCT CAR_ID), 0) * 100, 2) AS rework_rate_pct
+FROM (
+    SELECT CAR_ID, SUM(HAS_ERROR) AS error_count
+    FROM {T}.FACT_QUALITY_EVENTS GROUP BY CAR_ID
+)
+"""
+
+PRODUCTION_LINE_PERFORMANCE = f"""
+SELECT SUPPLIER_NAME AS production_line,
+       COUNT(*) AS total_events,
+       SUM(HAS_ERROR) AS failures,
+       ROUND(SUM(HAS_ERROR)::FLOAT / NULLIF(COUNT(*), 0) * 100, 2) AS defect_rate_pct,
+       COUNT(DISTINCT CAR_ID) AS vehicles_processed
+FROM {T}.FACT_QUALITY_EVENTS
+GROUP BY SUPPLIER_NAME ORDER BY defect_rate_pct DESC
+"""
+
+DEFECT_BY_STATE_PLANT = f"""
+SELECT STATE, STATE_AB,
+       COUNT(*) AS total_events,
+       SUM(HAS_ERROR) AS failures,
+       ROUND(SUM(HAS_ERROR)::FLOAT / NULLIF(COUNT(*), 0) * 100, 2) AS defect_rate_pct
+FROM {T}.FACT_QUALITY_EVENTS
+GROUP BY STATE, STATE_AB ORDER BY defect_rate_pct DESC
+LIMIT 15
+"""
+
+WEEKLY_CONTROL_CHART = f"""
+SELECT WEEK_START,
+       ROUND(SUM(FAILURE_COUNT)::FLOAT / NULLIF(SUM(TOTAL_EVENTS), 0) * 100, 2) AS failure_rate_pct
+FROM {T}.AGG_FAILURE_RATES
+GROUP BY WEEK_START ORDER BY WEEK_START
+"""
+
+SHIFT_QUALITY_PROXY = f"""
+SELECT
+    CASE MOD(ABS(HASH(CAR_ID || PART_NUMBER || EVENT_DATE)), 3)
+        WHEN 0 THEN 'Morning Shift (6AM-2PM)'
+        WHEN 1 THEN 'Afternoon Shift (2PM-10PM)'
+        ELSE 'Night Shift (10PM-6AM)'
+    END AS shift_period,
+    COUNT(*) AS total_events,
+    SUM(HAS_ERROR) AS failures,
+    ROUND(SUM(HAS_ERROR)::FLOAT / NULLIF(COUNT(*), 0) * 100, 2) AS defect_rate_pct
+FROM {T}.FACT_QUALITY_EVENTS
+GROUP BY shift_period ORDER BY defect_rate_pct DESC
+"""
+
+# ── Supplier Quality Dashboard ────────────────────────────────────────
+
+SUPPLIER_SCORECARD_FULL = f"""
+SELECT * FROM {T}.SUPPLIER_SCORECARD ORDER BY OVERALL_FAILURE_RATE DESC
+"""
+
+SUPPLIER_WEEKLY_TREND = f"""
+SELECT WEEK_START, SUPPLIER_NAME,
+       ROUND(SUM(FAILURE_COUNT)::FLOAT / NULLIF(SUM(TOTAL_EVENTS), 0) * 100, 2) AS failure_rate_pct
+FROM {T}.AGG_FAILURE_RATES
+GROUP BY WEEK_START, SUPPLIER_NAME ORDER BY WEEK_START
+"""
+
+BATTERY_TYPE_PERFORMANCE = f"""
+SELECT BATTERY_TYPE_NAME, SUPPLIER_NAME,
+       SUM(TOTAL_EVENTS) AS total_events, SUM(FAILURE_COUNT) AS total_failures,
+       ROUND(SUM(FAILURE_COUNT)::FLOAT / NULLIF(SUM(TOTAL_EVENTS), 0) * 100, 2) AS failure_rate_pct
+FROM {T}.AGG_FAILURE_RATES
+GROUP BY BATTERY_TYPE_NAME, SUPPLIER_NAME ORDER BY failure_rate_pct DESC
+"""
+
+SUPPLIER_PPM = f"""
+SELECT SUPPLIER_NAME,
+       SUM(TOTAL_EVENTS) AS total_events,
+       SUM(TOTAL_FAILURES) AS total_failures,
+       ROUND(SUM(TOTAL_FAILURES)::FLOAT / NULLIF(SUM(TOTAL_EVENTS), 0) * 1000000, 0) AS defect_ppm,
+       RELIABILITY_SCORE,
+       SUPPLIER_STATUS
+FROM {T}.SUPPLIER_SCORECARD
+GROUP BY SUPPLIER_NAME, RELIABILITY_SCORE, SUPPLIER_STATUS
+ORDER BY defect_ppm DESC
+"""
+
+SUPPLIER_COMPONENT_HEATMAP = f"""
+SELECT SUPPLIER_NAME, BATTERY_TYPE_NAME,
+       SUM(TOTAL_EVENTS) AS total_events,
+       SUM(FAILURE_COUNT) AS failures,
+       ROUND(SUM(FAILURE_COUNT)::FLOAT / NULLIF(SUM(TOTAL_EVENTS), 0) * 100, 2) AS failure_rate_pct
+FROM {T}.AGG_FAILURE_RATES
+GROUP BY SUPPLIER_NAME, BATTERY_TYPE_NAME
+"""
+
+# ── Predictive Maintenance Dashboard ──────────────────────────────────
 
 FORECAST_DATA = f"""
 SELECT SERIES AS part_number, TS AS forecast_date,
-       FORECAST AS predicted_failures, LOWER_BOUND, UPPER_BOUND
+       ROUND(FORECAST, 2) AS predicted_failures,
+       ROUND(GREATEST(LOWER_BOUND, 0), 2) AS LOWER_BOUND,
+       ROUND(GREATEST(UPPER_BOUND, 0), 2) AS UPPER_BOUND
 FROM {T}.FORECAST_FAILURES_30D ORDER BY SERIES, TS
 """
 
@@ -148,58 +347,31 @@ FROM {T}.AGG_FAILURE_RATES
 GROUP BY SUPPLIER_NAME, BATTERY_TYPE_NAME
 """
 
-# ── Recall Simulator ─────────────────────────────────────────────────
-
-RECALL_BASE = f"""
-SELECT VIN, CAR_ID, PART_NUMBER, STATE, STATE_AB,
-       SUPPLIER_NAME, BATTERY_TYPE_NAME,
-       RISK_SCORE, ERROR_COUNT, RISK_TIER
+RUL_ESTIMATES = f"""
+SELECT VIN, VEHICLE_CONFIG, SUPPLIER_NAME, BATTERY_TYPE_NAME,
+       RISK_SCORE, RISK_TIER,
+       ROUND(24 * (1 - RISK_SCORE / 100), 1) AS rul_months,
+       ROUND(RISK_SCORE, 1) AS failure_probability_pct
 FROM {T}.VEHICLE_RISK_SCORE
+WHERE RISK_TIER IN ('CRITICAL', 'HIGH')
+ORDER BY RISK_SCORE DESC LIMIT 50
 """
 
-# ── Supplier Intelligence ────────────────────────────────────────────
-
-SUPPLIER_SCORECARD_FULL = f"""
-SELECT * FROM {T}.SUPPLIER_SCORECARD ORDER BY OVERALL_FAILURE_RATE DESC
+RISK_DISTRIBUTION = f"""
+SELECT
+    CASE
+        WHEN RISK_SCORE >= 80 THEN '80-100 (Critical)'
+        WHEN RISK_SCORE >= 60 THEN '60-79 (High)'
+        WHEN RISK_SCORE >= 40 THEN '40-59 (Medium)'
+        WHEN RISK_SCORE >= 20 THEN '20-39 (Low)'
+        ELSE '0-19 (Minimal)'
+    END AS risk_band,
+    COUNT(*) AS vehicle_count
+FROM {T}.VEHICLE_RISK_SCORE
+GROUP BY risk_band ORDER BY risk_band DESC
 """
 
-SUPPLIER_WEEKLY_TREND = f"""
-SELECT WEEK_START, SUPPLIER_NAME,
-       ROUND(SUM(FAILURE_COUNT)::FLOAT / NULLIF(SUM(TOTAL_EVENTS), 0) * 100, 2) AS failure_rate_pct
-FROM {T}.AGG_FAILURE_RATES
-GROUP BY WEEK_START, SUPPLIER_NAME ORDER BY WEEK_START
-"""
-
-BATTERY_TYPE_PERFORMANCE = f"""
-SELECT BATTERY_TYPE_NAME, SUPPLIER_NAME,
-       SUM(TOTAL_EVENTS) AS total_events, SUM(FAILURE_COUNT) AS total_failures,
-       ROUND(SUM(FAILURE_COUNT)::FLOAT / NULLIF(SUM(TOTAL_EVENTS), 0) * 100, 2) AS failure_rate_pct
-FROM {T}.AGG_FAILURE_RATES
-GROUP BY BATTERY_TYPE_NAME, SUPPLIER_NAME ORDER BY failure_rate_pct DESC
-"""
-
-# ── Geo Intelligence ─────────────────────────────────────────────────
-
-GEO_STATE_HEALTH = f"""
-SELECT * FROM {T}.FLEET_HEALTH_GEO ORDER BY HIGH_RISK_PCT DESC
-"""
-
-FAILURES_BY_STATE = f"""
-SELECT STATE, STATE_AB, COUNT(*) AS failure_count,
-       ROUND(AVG(AVG_TEMP_F), 1) AS avg_temp,
-       COUNT(DISTINCT CAR_ID) AS vehicles_affected
-FROM {T}.FACT_QUALITY_EVENTS WHERE HAS_ERROR = 1
-GROUP BY STATE, STATE_AB ORDER BY failure_count DESC
-"""
-
-GEO_VEHICLE_POINTS = f"""
-SELECT LATITUDE, LONGITUDE, STATE_AB, HAS_ERROR, SUPPLIER_NAME,
-       BATTERY_TYPE_NAME, CAR_ID
-FROM {T}.FACT_QUALITY_EVENTS
-WHERE LATITUDE IS NOT NULL AND LONGITUDE IS NOT NULL
-"""
-
-# ── Action Center ────────────────────────────────────────────────────
+# ── Anomaly Detection Dashboard ───────────────────────────────────────
 
 EARLY_WARNINGS = f"""
 SELECT VIN, CAR_ID, DETECTED_AT, ALERT_TYPE, SEVERITY, EXPLANATION
@@ -209,6 +381,38 @@ FROM {T}.EARLY_WARNING_ALERTS ORDER BY DETECTED_AT DESC
 ALERTS_BY_SEVERITY = f"""
 SELECT SEVERITY, COUNT(*) AS cnt
 FROM {T}.EARLY_WARNING_ALERTS GROUP BY SEVERITY
+"""
+
+ANOMALY_TEMP_PATTERNS = f"""
+SELECT DATE_TRUNC('week', EVENT_DATE) AS week,
+       ROUND(AVG(AVG_TEMP_F), 1) AS avg_temp,
+       ROUND(STDDEV(AVG_TEMP_F), 1) AS temp_stddev,
+       ROUND(AVG(AVG_TEMP_F) + 2 * STDDEV(AVG_TEMP_F), 1) AS upper_band,
+       ROUND(AVG(AVG_TEMP_F) - 2 * STDDEV(AVG_TEMP_F), 1) AS lower_band,
+       SUM(HAS_ERROR) AS errors_in_period
+FROM {T}.FACT_QUALITY_EVENTS
+GROUP BY week ORDER BY week
+"""
+
+ANOMALY_RISK_ACTIONS = f"""
+SELECT VIN, RISK_TIER, RISK_SCORE,
+       PRIMARY_RISK_FACTOR, RECOMMENDED_ACTION,
+       SUPPLIER_NAME, BATTERY_TYPE_NAME
+FROM {T}.RISK_EXPLANATION
+WHERE RISK_TIER IN ('CRITICAL', 'HIGH')
+ORDER BY RISK_SCORE DESC LIMIT 30
+"""
+
+SENSOR_DEVIATION_BY_SUPPLIER = f"""
+SELECT SUPPLIER_NAME,
+       ROUND(AVG(AVG_TEMP_F), 1) AS avg_temp,
+       ROUND(STDDEV(AVG_TEMP_F), 1) AS temp_stddev,
+       ROUND(AVG(AVG_WIND_SPEED_MPH), 1) AS avg_wind,
+       ROUND(AVG(DIST_IN_M), 1) AS avg_distance,
+       SUM(HAS_ERROR) AS total_errors,
+       COUNT(*) AS total_readings
+FROM {T}.FACT_QUALITY_EVENTS
+GROUP BY SUPPLIER_NAME
 """
 
 # ── Copilot context ──────────────────────────────────────────────────
