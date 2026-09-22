@@ -13,7 +13,7 @@ render_sidebar_nav()
 st.markdown("""
 <style>
     .hero-banner {
-        background: linear-gradient(135deg, #0D1117 0%, #101820 40%, #0a1628 100%);
+        background: linear-gradient(135deg, #1E2535 0%, #232D40 40%, #1c2844 100%);
         border: 1px solid rgba(41,181,232,0.15);
         border-radius: 1rem;
         padding: 2rem 2.5rem;
@@ -59,7 +59,7 @@ st.markdown("""
     .kpi-row { display: flex; gap: 1rem; margin-bottom: 1.5rem; flex-wrap: wrap; }
     .kpi-card {
         flex: 1; min-width: 140px;
-        background: linear-gradient(135deg, #161B22 0%, #1A2332 100%);
+        background: linear-gradient(135deg, #232A3B 0%, #2A3347 100%);
         border: 1px solid rgba(41,181,232,0.2);
         border-radius: 0.75rem;
         padding: 1rem 1.2rem;
@@ -98,7 +98,7 @@ st.markdown("""
         font-weight: 700; margin-bottom: 0.75rem; margin-top: 0.5rem;
     }
     .insight-box {
-        background: linear-gradient(135deg, #0d1f2d 0%, #162033 100%);
+        background: linear-gradient(135deg, #1E2B3D 0%, #253248 100%);
         border: 1px solid rgba(41,181,232,0.25);
         border-left: 4px solid #29B5E8;
         border-radius: 0.75rem;
@@ -114,7 +114,7 @@ st.markdown("""
         font-size: 0.9rem; color: #C9D1D9; line-height: 1.6;
     }
     .nav-card {
-        background: linear-gradient(135deg, #161B22 0%, #1A2332 100%);
+        background: linear-gradient(135deg, #232A3B 0%, #2A3347 100%);
         border: 1px solid rgba(41,181,232,0.18);
         border-radius: 0.75rem;
         padding: 1.1rem 1rem 0.9rem 1rem;
@@ -250,7 +250,7 @@ if data_loaded:
     critical = bucket_map.get('CRITICAL', 0)
 
     st.markdown(f"""
-    <div style="background: linear-gradient(135deg, #161B22, #1A2332); border: 1px solid rgba(41,181,232,0.12);
+    <div style="background: linear-gradient(135deg, #232A3B, #2A3347); border: 1px solid rgba(41,181,232,0.12);
                 border-radius: 0.75rem; padding: 1rem 1.5rem; margin-bottom: 1.5rem;">
         <div style="display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:1rem;">
             <div class="fleet-status">

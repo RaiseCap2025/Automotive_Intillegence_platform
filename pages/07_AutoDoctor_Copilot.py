@@ -362,22 +362,12 @@ if "messages" not in st.session_state:
 if "pending_prompt" not in st.session_state:
     st.session_state.pending_prompt = None
 
-# Action bar (Attach / Chat History)
-ab1, ab2, ab_spacer = st.columns([1, 1, 4])
-with ab1:
-    st.button("📎 Attach Document", disabled=True, help="Document upload coming soon")
-with ab2:
-    if st.button("📜 View Chat History"):
-        if st.session_state.messages:
-            with st.expander("Chat History", expanded=True):
-                for m in st.session_state.messages:
-                    role_lbl = "You" if m["role"] == "user" else "AutoDoctor"
-                    st.markdown(f"**{role_lbl}:** {m['content'][:200]}{'...' if len(m['content']) > 200 else ''}")
-        else:
-            st.info("No chat history yet.")
+
+_USER_AVATAR = "assets/person.png"
+_BOT_AVATAR = "assets/car2.png"
 
 for msg in st.session_state.messages:
-    with st.chat_message(msg["role"]):
+    with st.chat_message(msg["role"], avatar=_USER_AVATAR if msg["role"] == "user" else _BOT_AVATAR):
         st.markdown(msg["content"])
 
 # Suggested questions
@@ -408,10 +398,10 @@ if prompt is None and st.session_state.pending_prompt is not None:
 
 if prompt:
     st.session_state.messages.append({"role": "user", "content": prompt})
-    with st.chat_message("user"):
+    with st.chat_message("user", avatar=_USER_AVATAR):
         st.markdown(prompt)
 
-    with st.chat_message("assistant"):
+    with st.chat_message("assistant", avatar=_BOT_AVATAR):
         loader = st.empty()
         result_holder = {}
 

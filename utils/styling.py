@@ -14,7 +14,7 @@ CUSTOM_CSS = """
 <style>
     .block-container {padding-top: 1rem; padding-bottom: 0.5rem;}
     [data-testid="stSidebar"] {
-        background-color: #161B22;
+        background-color: #232A3B;
         min-width: 14rem !important;
         width: clamp(14rem, 18vw, 22rem) !important;
     }
@@ -22,7 +22,7 @@ CUSTOM_CSS = """
 
     /* KPI Cards — responsive */
     [data-testid="stMetric"] {
-        background: linear-gradient(135deg, #161B22 0%, #1A2332 100%);
+        background: linear-gradient(135deg, #232A3B 0%, #2A3347 100%);
         border: 1px solid #29B5E8;
         border-radius: 0.625rem;
         padding: 0.875rem 1.125rem;
@@ -39,7 +39,7 @@ CUSTOM_CSS = """
 
     /* Tabs */
     .stTabs [data-baseweb="tab-list"] {gap: 4px;}
-    .stTabs [data-baseweb="tab"] {background-color: #161B22; border-radius: 6px 6px 0 0; padding: 0.5rem 1rem;}
+    .stTabs [data-baseweb="tab"] {background-color: #232A3B; border-radius: 6px 6px 0 0; padding: 0.5rem 1rem;}
 
     /* Status badges — em-based so they scale with parent font */
     .badge-healthy {background:#065F46; color:#34D399; padding:0.2em 0.7em; border-radius:0.75em; font-size:0.8em; font-weight:600;}
@@ -60,7 +60,7 @@ CUSTOM_CSS = """
         .kpi-grid.cols-4, .kpi-grid.cols-5 { grid-template-columns: repeat(2, 1fr); }
     }
     .kpi-v2 {
-        background: linear-gradient(135deg, #161B22 0%, #1A2332 100%);
+        background: linear-gradient(135deg, #232A3B 0%, #2A3347 100%);
         border: 1px solid rgba(41,181,232,0.15);
         border-radius: 0.75rem;
         padding: 1.1rem 1.25rem 0.9rem;
@@ -98,7 +98,7 @@ CUSTOM_CSS = """
     }
     .kpi-v2 .kpi-v2-badge.up   { background: #065F46; color: #34D399; }
     .kpi-v2 .kpi-v2-badge.down { background: #7F1D1D; color: #F87171; }
-    .kpi-v2 .kpi-v2-badge.flat { background: #1F2937; color: #8B949E; }
+    .kpi-v2 .kpi-v2-badge.flat { background: #2D3548; color: #8B949E; }
     .kpi-v2 .kpi-v2-sub {
         font-size: 0.75rem; color: #6E7681; margin-top: 0.25rem;
     }
@@ -106,7 +106,7 @@ CUSTOM_CSS = """
     /* ── Page header bar ── */
     .page-header-bar {
         display: flex; align-items: center; justify-content: space-between;
-        background: linear-gradient(135deg, #0D1117 0%, #101820 100%);
+        background: linear-gradient(135deg, #1E2535 0%, #232D40 100%);
         border: 1px solid rgba(41,181,232,0.12);
         border-radius: 0.75rem;
         padding: 0.9rem 1.5rem;
@@ -169,7 +169,7 @@ CUSTOM_CSS = """
 
     /* ── Sidebar brand card ── */
     .sidebar-brand {
-        background: linear-gradient(135deg, #0D1117 0%, #101820 100%);
+        background: linear-gradient(135deg, #1E2535 0%, #232D40 100%);
         border: 1px solid rgba(41,181,232,0.35);
         border-radius: 0.6rem;
         padding: 0.7rem 0.85rem;
@@ -191,7 +191,7 @@ CUSTOM_CSS = """
     }
     /* ── Sidebar user profile card ── */
     .sidebar-profile {
-        background: linear-gradient(135deg, #0D1117 0%, #101820 100%);
+        background: linear-gradient(135deg, #1E2535 0%, #232D40 100%);
         border: 1px solid rgba(41,181,232,0.2);
         border-radius: 0.6rem;
         padding: 0.6rem 0.75rem;
@@ -232,7 +232,7 @@ CUSTOM_CSS = """
         display: flex !important;
         align-items: center !important;
         justify-content: center !important;
-        background: radial-gradient(ellipse at center, rgba(10,15,30,0.95) 0%, rgba(10,15,30,0.98) 100%);
+        background: radial-gradient(ellipse at center, rgba(26,31,46,0.96) 0%, rgba(26,31,46,0.98) 100%);
         animation: splash-dismiss 3.5s ease-in-out forwards;
     }
     @keyframes splash-dismiss {
@@ -262,6 +262,16 @@ CUSTOM_CSS = """
     @keyframes pulse-text {
         0%, 100% { opacity: 0.4; }
         50%      { opacity: 1; }
+    }
+
+    /* Chat avatars — prevent circular crop so full image is visible */
+    [data-testid="stChatMessage"] [data-testid="stChatMessageAvatarCustom"] {
+        border-radius: 0.375rem !important;
+        overflow: visible !important;
+    }
+    [data-testid="stChatMessage"] [data-testid="stChatMessageAvatarCustom"] img {
+        border-radius: 0.375rem !important;
+        object-fit: contain !important;
     }
 </style>
 """
@@ -399,7 +409,7 @@ COLORS = {
     "accent2": "#F472B6",
     "accent3": "#FB923C",
     "accent4": "#38BDF8",
-    "bg_card": "#161B22",
+    "bg_card": "#232A3B",
     "text_dim": "#8B949E",
 }
 
