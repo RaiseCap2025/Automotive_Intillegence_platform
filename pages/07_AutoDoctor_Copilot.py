@@ -165,12 +165,11 @@ def ask_agent(question: str, session) -> str:
             {"role": "user", "content": [{"type": "text", "text": question}]}
         ]
     })
-    escaped_json = messages_json.replace("'", "''")
-    query = f"SELECT SNOWFLAKE.CORTEX.DATA_AGENT_RUN('VEHICLE_QUALITY_DB.PUBLIC.VEHICLE_QUALITY_ORCHESTRATOR', '{escaped_json}')::VARCHAR AS response"
+    query = "SELECT SNOWFLAKE.CORTEX.DATA_AGENT_RUN('VEHICLE_QUALITY_DB.PUBLIC.VEHICLE_QUALITY_ORCHESTRATOR', ?)::VARCHAR AS response"
 
     cursor = session.connection.cursor()
     try:
-        cursor.execute(query)
+        cursor.execute(query, (messages_json,))
         row = cursor.fetchone()
         raw = str(row[0])
     finally:
@@ -438,6 +437,7 @@ if prompt:
         else:
             response = result_holder.get("response", "No response from agent.")
 
-            st.markdown(response)
+        st.markdown(response)
 
     st.session_state.messages.append({"role": "assistant", "content": response})
+    st.rerun()

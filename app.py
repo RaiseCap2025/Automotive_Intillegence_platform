@@ -181,12 +181,6 @@ try:
 except Exception:
     data_loaded = False
 
-# -- Branded header bar --
-st.markdown(page_header("⚡", "Automotive Intelligence Platform",
-                        "Real-Time Vehicle Quality Analytics",
-                        ["Snowflake Cortex AI", "Hackathon 2026"]),
-            unsafe_allow_html=True)
-
 # -- Hero Banner --
 st.markdown("""
 <div class="hero-banner">
