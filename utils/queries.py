@@ -1,8 +1,8 @@
-"""Centralized SQL queries for the Automotive Intelligence Platform."""
+"""Centralized SQL queries for DriveIQ."""
 
 T = "VEHICLE_QUALITY_DB.PUBLIC"
 
-# ── Executive Summary Dashboard ───────────────────────────────────────
+# ── DriveIQ – Executive Summary Dashboard ─────────────────────────────
 
 KPI_OVERVIEW = f"""
 SELECT

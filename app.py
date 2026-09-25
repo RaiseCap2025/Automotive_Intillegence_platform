@@ -184,8 +184,8 @@ except Exception:
 # -- Hero Banner --
 st.markdown("""
 <div class="hero-banner">
-    <div class="hero-badge">EXECUTIVE SUMMARY</div>
-    <h1 class="hero-title">Automotive Intelligence Platform</h1>
+    <div class="hero-badge">DRIVEIQ — EXECUTIVE SUMMARY</div>
+    <h1 class="hero-title">DriveIQ</h1>
     <p class="hero-subtitle">Real-Time Vehicle Quality Analytics &mdash; Powered by Snowflake Cortex AI</p>
 </div>
 """, unsafe_allow_html=True)
@@ -366,7 +366,7 @@ st.markdown("""
         <span class="tech-pill">Streamlit</span>
     </div>
     <p style="text-align:center; color:#484F58; font-size:0.72rem; margin-top:0.5rem;">
-        Snowflake x Capgemini Hackathon 2026 &mdash; Automotive Intelligence Platform
+        Snowflake x Capgemini Hackathon 2026 &mdash; DriveIQ
     </p>
 </div>
 """, unsafe_allow_html=True)

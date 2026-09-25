@@ -1,10 +1,10 @@
-"""Shared styling and CSS for the Vehicle Quality Command Center."""
+"""Shared styling and CSS for DriveIQ."""
 import base64
 import os
 import html as _html
 
 PAGE_CONFIG = dict(
-    page_title="Vehicle Quality Command Center",
+    page_title="DriveIQ",
     page_icon="⚡",
     layout="wide",
     initial_sidebar_state="expanded",
@@ -308,7 +308,7 @@ def render_sidebar_nav():
         # App brand card
         st.markdown(
             '<div class="sidebar-brand">'
-            '<div class="brand-name"><span class="brand-icon">⚡</span>AUTO INTEL AI</div>'
+            '<div class="brand-name"><span class="brand-icon">⚡</span>DRIVEIQ</div>'
             '</div>',
             unsafe_allow_html=True,
         )
